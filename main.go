@@ -17,6 +17,7 @@ func main() {
 	botApi := "https://api.telegram.org/bot"
 	botUrl := botApi + botToken
 	offset := 0
+	getMe(botUrl)
 	for {
 		updates, err := getUpdates(botUrl, offset)
 		if err != nil {
@@ -47,6 +48,7 @@ func getUpdates(botUrl string, offset int) ([]Update, error) {
 	}
 
 	defer resp.Body.Close()
+
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
@@ -60,7 +62,7 @@ func getUpdates(botUrl string, offset int) ([]Update, error) {
 	return restResponse.Result, nil
 }
 
-func respond(botUrl string, update Update) (error error) {
+func respond(botUrl string, update Update) error {
 	var botMessage BotMessage
 	botMessage.ChatId = update.Message.Chat.ChatId
 	botMessage.Text = update.Message.Text
@@ -74,4 +76,17 @@ func respond(botUrl string, update Update) (error error) {
 		return err
 	}
 	return nil
+}
+
+func getMe(botUrl string) {
+	resp, err := http.Get(botUrl + "/getMe")
+	if err != nil {
+		fmt.Println("No response from request")
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body) // response body is []byte
+	var getMe GetMe
+	err = json.Unmarshal(body, &getMe)
+	fmt.Println(getMe.Result.UserName)
+	fmt.Println(getMe.Result.Id)
 }
